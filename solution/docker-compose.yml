@@ -1,0 +1,73 @@
+services:
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - cache:/data
+    networks:
+      - can-network  
+  postgres:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: scraper
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - can-network     
+  hub-service:
+    build:
+      context: ./hub
+      dockerfile: Dockerfile  
+    image: hub-service:latest
+    ports:
+      - "9010:9010"
+    networks:
+      - can-network  
+  notifier-service:
+    build:
+      context: ./notifier-service
+      dockerfile: Dockerfile  
+    image: notifier-service:latest
+    ports:
+      - "9030:8000"
+    environment:
+      PORT: 9030
+    networks:
+      - can-network
+  scraper-service:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile  
+    image: scraper-service:latest
+    ports:
+      - "9020:8000"
+    environment:
+      PORT: 9020
+    networks:
+      - can-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: frontend:latest
+    ports:
+      - "9999:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production
+    networks:
+      - can-network      
+networks:
+  can-network:
+    driver: "bridge"
+volumes:
+  cache:
+    driver: local
