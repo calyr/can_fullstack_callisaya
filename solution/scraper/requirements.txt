@@ -1,0 +1,16 @@
+mypy==1.10.0
+pydantic==2.7.4
+fastapi
+uvicorn
+python-multipart==0.0.9
+sqlalchemy
+psycopg2-binary
+sqlmodel
+asyncpg
+databases
+redis
+rq
+aioredis
+requests
+beautifulsoup4
+httpx
